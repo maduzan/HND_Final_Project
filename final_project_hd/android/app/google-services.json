@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "170626080347",
+    "project_id": "quickdone-a1b46",
+    "storage_bucket": "quickdone-a1b46.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:170626080347:android:98c042f0821d583fc7a97e",
+        "android_client_info": {
+          "package_name": "com.example.final_project_hd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHCxbwE3G30C39bUvUNuIADhmlKJYUxmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
