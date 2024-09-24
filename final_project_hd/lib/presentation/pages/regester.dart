@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:final_project_hd/domain/entities/user.dart';
 import 'package:final_project_hd/presentation/providers/authprovider.dart';
 import 'package:final_project_hd/presentation/providers/useprovider.dart';
@@ -174,7 +175,7 @@ class _SecondState extends State<Regester> {
             height: 291.24,
           ),
           Positioned(
-            top: 670,
+            top: 680,
             left: 125.01,
             width: 150,
             height: 35,
@@ -185,11 +186,12 @@ class _SecondState extends State<Regester> {
                   final userProvider = context.read<UserProvider>();
 
                   final user = User(
-                      fullName: fullNameController.text,
-                      username: usernameController.text,
-                      email: emailController.text,
-                      password: passwordController.text,
-                      repassword: repasswordController.text);
+                    fullName: fullNameController.text,
+                    username: usernameController.text,
+                    email: emailController.text,
+                    password: passwordController.text,
+                    repassword: repasswordController.text,
+                  );
 
                   if (passwordController.text == repasswordController.text) {
                     try {

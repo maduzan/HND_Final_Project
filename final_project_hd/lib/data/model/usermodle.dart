@@ -15,16 +15,17 @@ class userModel extends User {
       'username': username,
       'email': email,
       'password': password,
-      'repassword': repassword
+      'repassword': repassword,
     };
   }
 
   static userModel fromEntity(User user) {
     return userModel(
-        fullName: user.fullName,
-        username: user.username,
-        email: user.email,
-        password: user.password,
-        repassword: user.repassword);
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      password: user.password,
+      repassword: user.repassword,
+    );
   }
 }

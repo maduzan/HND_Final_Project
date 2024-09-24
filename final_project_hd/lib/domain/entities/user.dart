@@ -5,10 +5,11 @@ class User {
   final String password;
   final String repassword;
 
-  User(
-      {required this.fullName,
-      required this.username,
-      required this.email,
-      required this.password,
-      required this.repassword});
+  User({
+    required this.fullName,
+    required this.username,
+    required this.email,
+    required this.password,
+    required this.repassword,
+  });
 }
