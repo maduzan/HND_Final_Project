@@ -16,10 +16,8 @@ class Chatprovider extends ChangeNotifier {
 
   List<Chat> get fechdataList => _fechdataList;
 
-  void fetchFechdata(String senderId, reseveId) {
-    chatusecase
-        .getmessage(senderid as String, reseveId as String)
-        .listen((data) {
+  void fetchFechdata(String senderId, String reseveId) {
+    chatusecase.getmessage(senderid as String, reseveId).listen((data) {
       _fechdataList = data;
       notifyListeners(); // Notify the UI to update
     });

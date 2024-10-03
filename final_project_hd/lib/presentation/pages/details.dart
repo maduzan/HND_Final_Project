@@ -37,11 +37,14 @@ class _DetailsState extends State<Details> {
           icon: Icon(Icons.message),
           onPressed: () {
             // Assuming you have senderId and receiverId available
+            String defaultReceiverId =
+                "ktkRlh9U7qKcggjEbFyr"; // Set your default receiver ID
+
             Navigator.of(context).pushNamed(
               '/message',
               arguments: {
-                'senderId': senderId, // Make sure senderId is defined
-                'receiverId': receiverId, // Make sure receiverId is defined
+                'senderId': senderId ?? '', // Provide a default value if null
+                'receiverId': defaultReceiverId,
               },
             );
           },

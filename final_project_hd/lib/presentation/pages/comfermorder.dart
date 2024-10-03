@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -218,10 +219,12 @@ class _ConfermorderState extends State<Confermorder> {
                               {'email': email}); // Pass email as a map
 
                           if (result) {
-                            Navigator.of(context).pushNamed('/Details');
+                            Navigator.of(context).pushNamed('/payment');
                           } else {
                             debugPrint("Email sending failed.");
                           }
+                          await dtodatabase(
+                              email, _currentLocation!, _destinationAddress);
                         },
                         child: Text("Confirm Order"),
                       ),
@@ -314,6 +317,24 @@ class _ConfermorderState extends State<Confermorder> {
     } catch (error) {
       print('ERROR: $error');
       return false;
+    }
+  }
+
+  Future<void> dtodatabase(
+      String email, LatLng currentLocation, String _destinationAddress) async {
+    try {
+      final ordersCollection = FirebaseFirestore.instance.collection('orders');
+      await ordersCollection.add({
+        'email': email,
+        'currentLocation': {
+          'latitude': currentLocation.latitude,
+          'longitude': currentLocation.longitude,
+        },
+        'timestamp': FieldValue.serverTimestamp(), // Optionally add a timestamp
+      });
+      debugPrint("Order added to Firestore successfully.");
+    } catch (e) {
+      debugPrint("Failed to add order: $e");
     }
   }
 }

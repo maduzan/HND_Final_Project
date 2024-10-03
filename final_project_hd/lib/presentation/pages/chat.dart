@@ -1,117 +1,133 @@
-import 'package:final_project_hd/domain/entities/chat.dart';
-import 'package:final_project_hd/presentation/providers/chatprovider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Using Provider for state management
 
 class ChatScreen extends StatefulWidget {
-  final String senderId; // The employee or customer
-  final String receiverId; // The other party
+  final String userId; // User ID for sending messages
+  final String documentId; // Instructor ID
 
-  ChatScreen({required this.senderId, required this.receiverId});
+  const ChatScreen({
+    required this.userId,
+    required this.documentId,
+  });
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  List<DocumentSnapshot> messages = []; // Store messages here
 
   @override
   void initState() {
     super.initState();
+    // Listen to messages related to the instructor
+    FirebaseFirestore.instance
+        .collection('chats')
+        .where('instructorId',
+            isEqualTo: widget.documentId) // Check only instructorId
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        messages = snapshot.docs; // Update the messages list on data change
+      });
+    });
+  }
 
-    // Initialize the provider and fetch chat data once when the widget is created
-    final chatProvider = Provider.of<Chatprovider>(context, listen: false);
-    chatProvider.fetchFechdata(widget.senderId, widget.receiverId);
+  void sendMessage(String message) {
+    if (message.trim().isEmpty) return;
+
+    // Send the message with a sender field
+    FirebaseFirestore.instance.collection('chat').add({
+      'memberId': widget.userId, // Store user ID for context
+      'adminId': widget.documentId,
+      'message': message,
+      'sender': 'user', // Indicate the sender as user
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    _messageController.clear(); // Clear input field after sending the message
+    _scrollToBottom(); // Scroll to the bottom after sending
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.minScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the provider to fetch messages
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat with ${widget.receiverId}'),
+        title: Text('Chat'),
       ),
       body: Column(
         children: [
           Expanded(
-            child: Consumer<Chatprovider>(
-              builder: (context, provider, child) {
-                if (provider.fechdataList.isEmpty) {
-                  return Center(child: Text("No messages yet"));
-                }
+            child: ListView(
+              controller: _scrollController,
+              reverse: true, // Show the latest message at the bottom
+              children: messages.map((doc) {
+                final messageData = doc.data() as Map<String, dynamic>?;
 
-                return ListView.builder(
-                  reverse: true, // Display newest messages at the bottom
-                  itemCount: provider.fechdataList.length,
-                  itemBuilder: (context, index) {
-                    final message = provider.fechdataList[index];
-                    return _buildMessageBubble(message);
-                  },
+                // Use null-aware operator to handle potential nulls
+                final messageText =
+                    messageData?['message'] ?? 'Invalid message';
+                final sender =
+                    messageData?['sender'] ?? 'user'; // Default to user
+
+                // Determine the styling based on the sender
+                final isUserMessage = sender == 'user';
+                return Container(
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  alignment: isUserMessage
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Material(
+                    borderRadius: BorderRadius.circular(10),
+                    color: isUserMessage ? Colors.blue[200] : Colors.green[200],
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text(
+                        messageText,
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                  ),
                 );
-              },
+              }).toList(),
             ),
           ),
-          _buildMessageInput(context),
-        ],
-      ),
-    );
-  }
-
-  // Widget to build each message bubble
-  Widget _buildMessageBubble(Chat chat) {
-    bool isSentByMe = chat.senderid == widget.senderId;
-
-    return Align(
-      alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        decoration: BoxDecoration(
-          color: isSentByMe ? Colors.blue[100] : Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          chat.message,
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-    );
-  }
-
-  // Widget for the message input field
-  Widget _buildMessageInput(BuildContext context) {
-    final chatProvider = Provider.of<Chatprovider>(context, listen: false);
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      labelText: 'Type a message...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: sendMessage,
+                  ),
                 ),
-              ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    sendMessage(_messageController.text);
+                  },
+                ),
+              ],
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.send),
-            onPressed: () {
-              if (_messageController.text.isNotEmpty) {
-                final newMessage = Chat(
-                  senderid: widget.senderId,
-                  reseveId: widget.receiverId,
-                  message: _messageController.text,
-                  timestamp: DateTime.now(),
-                );
-                chatProvider.addmessage(newMessage);
-                _messageController.clear();
-              }
-            },
           ),
         ],
       ),

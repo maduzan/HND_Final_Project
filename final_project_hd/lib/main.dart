@@ -12,6 +12,7 @@ import 'package:final_project_hd/domain/usecase/plumberusecase.dart';
 import 'package:final_project_hd/domain/usecase/uscaseuser.dart';
 import 'package:final_project_hd/presentation/pages/chat.dart';
 import 'package:final_project_hd/presentation/pages/comfermorder.dart';
+import 'package:final_project_hd/presentation/pages/payment.dart';
 import 'package:final_project_hd/presentation/pages/regester.dart';
 import 'package:final_project_hd/presentation/pages/Second.dart';
 import 'package:final_project_hd/presentation/pages/details.dart';
@@ -137,23 +138,25 @@ class _MyAppState extends State<MyApp> {
         home: Home(),
         routes: {
           '/First': (context) => Second(),
+          '/payment': (context) => Pay(),
           '/Home': (context) => Home(),
           '/Regester': (context) => Regester(),
           '/Details': (context) => Details(),
           '/message': (context) {
             final args = ModalRoute.of(context)!.settings.arguments
                 as Map<String, dynamic>;
-            final String? senderId = 'KipsmUKWZFc2SiT6GA2w' as String?;
-            final String? receiverId = 'LChLNm96GoFAYgCucXm1' as String?;
+
+            final senderId = args['senderId']; // Correct key
+            final receiverId = args['receiverId']; // Correct key
+
+            if (senderId == null || receiverId == null) {
+              return Center(child: Text("Invalid sender or receiver ID"));
+            }
 
             print("Sender ID: $senderId");
             print("Receiver ID: $receiverId");
 
-            if (senderId != null && receiverId != null) {
-              return ChatScreen(senderId: senderId, receiverId: receiverId);
-            } else {
-              return Center(child: Text("User not logged in"));
-            }
+            return ChatScreen(userId: senderId, documentId: receiverId);
           },
           '/gmap': (context) => Confermorder(),
         },
